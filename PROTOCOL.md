@@ -874,9 +874,17 @@ When the `rows` field is omitted from a request, the server defaults to returnin
 
 Responses do **not** include a `type` field. Clients must correlate responses to requests using the `id` field. If multiple requests are in flight concurrently, each must have a unique `id`.
 
-### Optional Fields
+### Null and Optional Field Serialization
 
-Optional response fields may be omitted entirely when not applicable. For example, a successful query response will not include `error`, `sql_rc`, or `sql_state`, and column metadata may omit `autoIncrement`, `nullable`, `readOnly`, `writeable`, and `table`. Client implementations should treat absent fields the same as `null`.
+The server uses Gson with `serializeNulls()` enabled. Any field explicitly set to `null` will appear as `"field": null` in the JSON response (e.g., null cell values in query data).
+
+However, the server builds responses using a `LinkedHashMap` where fields are only added when applicable. Fields that are never added to the map are **absent from the response entirely**:
+
+- **`error`, `sql_rc`, `sql_state`** — only present on error responses. `sql_rc` and `sql_state` are only present when the error is a `SQLException`.
+- **`metadata`, `data`, `is_done`** — only present on query responses that produce a result set (`has_results=true`). An UPDATE/INSERT response omits these.
+- **`output_parms`** — only present on prepared statement execute responses.
+
+Column metadata fields (`autoIncrement`, `nullable`, `readOnly`, `writeable`, `table`) are populated from JDBC `ResultSetMetaData` and should always be present in the current server version, but are marked optional in the schema for forward compatibility. Client implementations should treat absent fields the same as `null`.
 
 ### CL Command Job Log Entries
 
