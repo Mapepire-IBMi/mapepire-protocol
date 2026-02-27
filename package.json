@@ -56,9 +56,15 @@
     "zod",
     "schema"
   ],
+  "author": "IBM",
+  "publisher": "IBM",
   "license": "Apache-2.0",
+  "homepage": "https://mapepire-ibmi.github.io/",
   "repository": {
     "type": "git",
     "url": "https://github.com/Mapepire-IBMi/mapepire-protocol"
+  },
+  "bugs": {
+    "url": "https://github.com/Mapepire-IBMi/mapepire-protocol/issues"
   }
 }
