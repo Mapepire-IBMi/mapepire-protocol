@@ -78,6 +78,83 @@ Or access the combined schema:
 import allSchemas from "@ibm/mapepire-protocol/schemas/index.json";
 ```
 
+### Python: validate messages with JSON Schema
+
+The generated JSON Schema files in `schemas/` can be used by any language. For Python, use the `jsonschema` library to validate outgoing requests and incoming responses at runtime.
+
+First, grab the schema files. You can either vendor them into your project or fetch them from the npm package:
+
+```bash
+npm pack @ibm/mapepire-protocol && tar -xzf ibm-mapepire-protocol-*.tgz package/schemas
+```
+
+Then validate messages in Python:
+
+```python
+import json
+from pathlib import Path
+from jsonschema import validate, ValidationError
+
+# Load schemas once at import time
+SCHEMA_DIR = Path("schemas")
+
+def load_schema(name: str) -> dict:
+    return json.loads((SCHEMA_DIR / name).read_text())
+
+sql_request_schema = load_schema("requests/sql-request.json")
+query_result_schema = load_schema("responses/query-result.json")
+
+# Validate an outgoing request before sending
+request = {
+    "id": "1",
+    "type": "sql",
+    "sql": "SELECT * FROM MYLIB.MYTABLE",
+    "rows": 100,
+}
+validate(instance=request, schema=sql_request_schema)  # raises on invalid
+
+# Validate an incoming response from the server
+response = json.loads(websocket.recv())
+try:
+    validate(instance=response, schema=query_result_schema)
+except ValidationError as e:
+    print(f"Unexpected server response: {e.message}")
+```
+
+### Python: generate dataclasses or Pydantic models
+
+For full type safety, generate Python types directly from the JSON Schema files using [datamodel-code-generator](https://github.com/koxudaxi/datamodel-code-generator):
+
+```bash
+pip install datamodel-code-generator
+
+# Generate Pydantic v2 models from all request schemas
+datamodel-codegen \
+    --input schemas/requests/ \
+    --output mapepire_protocol/requests.py \
+    --output-model-type pydantic_v2.BaseModel
+
+# Generate from a single schema
+datamodel-codegen \
+    --input schemas/requests/sql-request.json \
+    --output mapepire_protocol/sql_request.py \
+    --output-model-type pydantic_v2.BaseModel
+```
+
+This produces typed Python classes like:
+
+```python
+from pydantic import BaseModel
+from typing import Optional
+
+class SqlRequest(BaseModel):
+    id: str
+    type: str  # const: "sql"
+    sql: str
+    rows: Optional[int] = None
+    terse: Optional[bool] = None
+```
+
 ## Message Types
 
 | Type | Request Schema | Description |
