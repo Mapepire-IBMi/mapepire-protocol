@@ -163,7 +163,7 @@ Establishes (or re-establishes) the JDBC database connection on the server. This
 {"id": "1", "type": "connect", "props": "naming=system", "technique": "tcp"}
 
 // Response
-{"id": "1", "success": true, "job": "330921/QUSER/QZDASOINIT", "execution_time": 120}
+{"id": "1", "job": "330921/QUSER/QZDASOINIT", "success": true, "execution_time": 120}
 ```
 
 ---
@@ -204,15 +204,14 @@ Executes an SQL statement and returns the first block of results. This message d
 // Response
 {
   "id": "q1",
-  "success": true,
   "has_results": true,
   "update_count": -1,
   "metadata": {
     "column_count": 2,
     "job": "330921/QUSER/QZDASOINIT",
     "columns": [
-      {"name": "EMPNO", "type": "CHAR", "display_size": 6, "label": "EMPNO", "precision": 6, "scale": 0, "autoIncrement": false, "nullable": 1, "readOnly": false, "writeable": true, "table": "EMPLOYEE"},
-      {"name": "LASTNAME", "type": "VARCHAR", "display_size": 15, "label": "LASTNAME", "precision": 15, "scale": 0, "autoIncrement": false, "nullable": 0, "readOnly": false, "writeable": true, "table": "EMPLOYEE"}
+      {"name": "EMPNO", "type": "CHAR", "display_size": 6, "label": "EMPNO", "precision": 6, "scale": 0},
+      {"name": "LASTNAME", "type": "VARCHAR", "display_size": 15, "label": "LASTNAME", "precision": 15, "scale": 0}
     ]
   },
   "data": [
@@ -220,6 +219,7 @@ Executes an SQL statement and returns the first block of results. This message d
     {"EMPNO": "000020", "LASTNAME": "THOMPSON"}
   ],
   "is_done": false,
+  "success": true,
   "execution_time": 34
 }
 ```
@@ -258,7 +258,6 @@ Prepares an SQL statement without executing it. Returns metadata about the state
 // Response
 {
   "id": "p1",
-  "success": true,
   "metadata": {
     "column_count": 14,
     "job": "330921/QUSER/QZDASOINIT",
@@ -268,6 +267,7 @@ Prepares an SQL statement without executing it. Returns metadata about the state
     ]
   },
   "parameter_count": 1,
+  "success": true,
   "execution_time": 12
 }
 ```
@@ -319,14 +319,13 @@ Prepares and executes an SQL statement in a single round-trip. Supports both sin
 // Response
 {
   "id": "pse1",
-  "success": true,
   "has_results": true,
   "update_count": -1,
   "metadata": {"column_count": 14, "job": "330921/QUSER/QZDASOINIT", "columns": [...]},
   "data": [...],
   "is_done": true,
   "parameter_count": 1,
-  "output_parms": null,
+  "success": true,
   "execution_time": 28
 }
 ```
@@ -396,12 +395,12 @@ Fetches the next block of rows from an open cursor. The `cont_id` references the
 // Response
 {
   "id": "q1-more",
-  "success": true,
   "data": [
     {"EMPNO": "000030", "LASTNAME": "KWAN"},
     {"EMPNO": "000050", "LASTNAME": "GEYER"}
   ],
   "is_done": true,
+  "success": true,
   "execution_time": 8
 }
 ```
@@ -526,7 +525,7 @@ Checks whether the server process and the database connection are alive.
 {"id": "hc1", "type": "ping"}
 
 // Response
-{"id": "hc1", "success": true, "alive": true, "db_alive": true, "execution_time": 1}
+{"id": "hc1", "alive": true, "db_alive": true, "success": true, "execution_time": 1}
 ```
 
 ---
@@ -581,7 +580,7 @@ Returns the server build version and date.
 {"id": "v1", "type": "getversion"}
 
 // Response
-{"id": "v1", "success": true, "build_date": "2024-08-01", "version": "2.0.0", "execution_time": 0}
+{"id": "v1", "build_date": "2024-08-01", "version": "2.0.0", "success": true, "execution_time": 0}
 ```
 
 ---
@@ -683,11 +682,11 @@ Describes a single column in a result set.
 | `label` | string | Column label (often the same as `name`) |
 | `precision` | integer | Numeric precision or character length |
 | `scale` | integer | Number of digits after the decimal point |
-| `autoIncrement` | boolean | `true` if the column is auto-incrementing |
-| `nullable` | integer | Nullability: `0` = not nullable, `1` = nullable, `2` = unknown |
-| `readOnly` | boolean | `true` if the column is read-only |
-| `writeable` | boolean | `true` if the column is writeable |
-| `table` | string | Name of the table this column belongs to |
+| `autoIncrement` | boolean | Optional. `true` if the column is auto-incrementing |
+| `nullable` | integer | Optional. Nullability: `0` = not nullable, `1` = nullable, `2` = unknown |
+| `readOnly` | boolean | Optional. `true` if the column is read-only |
+| `writeable` | boolean | Optional. `true` if the column is writeable |
+| `table` | string | Optional. Name of the table this column belongs to |
 
 ### QueryMetaData
 
@@ -875,9 +874,9 @@ When the `rows` field is omitted from a request, the server defaults to returnin
 
 Responses do **not** include a `type` field. Clients must correlate responses to requests using the `id` field. If multiple requests are in flight concurrently, each must have a unique `id`.
 
-### Null Serialization
+### Optional Fields
 
-The server uses Gson with `serializeNulls()` enabled. This means fields with null values appear explicitly in JSON responses (e.g., `"output_parms": null`) rather than being omitted. Client implementations should be prepared to handle explicit `null` values for any optional field.
+Optional response fields may be omitted entirely when not applicable. For example, a successful query response will not include `error`, `sql_rc`, or `sql_state`, and column metadata may omit `autoIncrement`, `nullable`, `readOnly`, `writeable`, and `table`. Client implementations should treat absent fields the same as `null`.
 
 ### CL Command Job Log Entries
 
