@@ -1,0 +1,17 @@
+[project]
+name = "python-test"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.13"
+dependencies = [
+    "jsonschema>=4.26.0",
+    "pydantic>=2.12.5",
+    "pytest>=9.0.2",
+    "python-dotenv>=1.2.1",
+    "websockets>=16.0",
+]
+
+[dependency-groups]
+dev = [
+    "datamodel-code-generator>=0.54.0",
+]

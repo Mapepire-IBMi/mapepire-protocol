@@ -11,11 +11,11 @@ export const ColumnMetaData = z.object({
   label: z.string(),
   precision: z.number().int(),
   scale: z.number().int(),
-  autoIncrement: z.boolean(),
-  nullable: z.number().int(),
-  readOnly: z.boolean(),
-  writeable: z.boolean(),
-  table: z.string(),
+  autoIncrement: z.boolean().optional(),
+  nullable: z.number().int().optional(),
+  readOnly: z.boolean().optional(),
+  writeable: z.boolean().optional(),
+  table: z.string().optional(),
 });
 
 export type ColumnMetaData = z.infer<typeof ColumnMetaData>;

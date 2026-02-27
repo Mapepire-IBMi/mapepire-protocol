@@ -3,3 +3,9 @@ dist/
 schemas/
 *.tgz
 .claude/
+python-test/.venv/
+python-test/mapepire_protocol/requests/
+python-test/mapepire_protocol/responses/
+python-test/.pytest_cache/
+python-test/.env
+__pycache__/
